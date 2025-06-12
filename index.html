@@ -21,51 +21,13 @@
     <main>
         <section id="products">
             <h2>Nossos Produtos</h2>
+            <div class="search-filter-container">
+                <input type="text" id="search-input" placeholder="Buscar produtos...">
+                <select id="category-filter">
+                    <option value="">Todas as categorias</option>
+                </select>
+            </div>
             <div id="product-list" class="product-grid">
-<div class="product-card">
-    <img src="https://via.placeholder.com/300x300.png?text=Chave+de+Fenda" alt="Chave de Fenda">
-    <h3>Chave de Fenda</h3>
-    <p>Ferramenta manual para aperto e desaperto de parafusos.</p>
-    <p class="price">R$ 15.90</p>
-    <button data-id="1001" class="add-to-cart">Adicionar ao Carrinho</button>
-    <button data-id="1001" class="view-details">Ver Detalhes</button>
-</div>
-
-<div class="product-card">
-    <img src="https://via.placeholder.com/300x300.png?text=Furadeira" alt="Furadeira Elétrica">
-    <h3>Furadeira Elétrica</h3>
-    <p>Furadeira de 500W para uso doméstico e profissional.</p>
-    <p class="price">R$ 199.90</p>
-    <button data-id="1002" class="add-to-cart">Adicionar ao Carrinho</button>
-    <button data-id="1002" class="view-details">Ver Detalhes</button>
-</div>
-
-<div class="product-card">
-    <img src="https://via.placeholder.com/300x300.png?text=Martelo" alt="Martelo">
-    <h3>Martelo</h3>
-    <p>Martelo de aço com cabo emborrachado para maior conforto.</p>
-    <p class="price">R$ 25.00</p>
-    <button data-id="1003" class="add-to-cart">Adicionar ao Carrinho</button>
-    <button data-id="1003" class="view-details">Ver Detalhes</button>
-</div>
-
-<div class="product-card">
-    <img src="https://via.placeholder.com/300x300.png?text=Alicate" alt="Alicate Universal">
-    <h3>Alicate Universal</h3>
-    <p>Ideal para cortes, dobra e aperto de fios.</p>
-    <p class="price">R$ 32.50</p>
-    <button data-id="1004" class="add-to-cart">Adicionar ao Carrinho</button>
-    <button data-id="1004" class="view-details">Ver Detalhes</button>
-</div>
-
-<div class="product-card">
-    <img src="https://via.placeholder.com/300x300.png?text=Trena+5m" alt="Trena 5m">
-    <h3>Trena 5m</h3>
-    <p>Trena de 5 metros com trava automática e clip de cinto.</p>
-    <p class="price">R$ 18.75</p>
-    <button data-id="1005" class="add-to-cart">Adicionar ao Carrinho</button>
-    <button data-id="1005" class="view-details">Ver Detalhes</button>
-</div>
                 <!-- Produtos serão carregados aqui pelo JavaScript -->
             </div>
         </section>
@@ -82,33 +44,64 @@
             <div id="cart-items">
                 <!-- Itens do carrinho serão carregados aqui pelo JavaScript -->
             </div>
-            <p>Total: R$ <span id="cart-total">0.00</span></p>
-            <button id="checkout-button">Finalizar Compra</button>
+            <div class="cart-summary">
+                <p class="cart-total">Total: R$ <span id="cart-total">0.00</span></p>
+                <div class="cart-actions">
+                    <button id="clear-cart">Limpar Carrinho</button>
+                    <button id="checkout-button">Finalizar Compra</button>
+                </div>
+            </div>
         </section>
 
         <section id="checkout" class="hidden">
             <h2>Finalizar Compra</h2>
-            <form id="checkout-form">
-                <label for="name">Nome Completo:</label>
-                <input type="text" id="name" required>
+            <div class="checkout-container">
+                <div class="checkout-form">
+                    <form id="checkout-form">
+                        <h3>Dados de Entrega</h3>
+                        <label for="name">Nome Completo:</label>
+                        <input type="text" id="name" required>
 
-                <label for="address">Endereço de Entrega:</label>
-                <input type="text" id="address" required>
+                        <label for="address">Endereço de Entrega:</label>
+                        <input type="text" id="address" required>
 
-                <label for="phone">Telefone:</label>
-                <input type="tel" id="phone" required>
+                        <label for="phone">Telefone:</label>
+                        <input type="tel" id="phone" required>
 
-                <label for="email">Email:</label>
-                <input type="email" id="email" required>
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" required>
 
-                <h3>Pagamento via PIX</h3>
-                <p>Chave PIX: <span id="pix-key">[Sua Chave PIX Aqui]</span></p>
-                <p>Valor a pagar: R$ <span id="pix-amount">0.00</span></p>
-                <label for="payment-proof">Comprovante de Pagamento (URL da imagem):</label>
-                <input type="url" id="payment-proof" required>
+                        <h3>Configurações PIX</h3>
+                        <label for="pix-key-input">Sua Chave PIX:</label>
+                        <input type="text" id="pix-key-input" placeholder="Digite sua chave PIX" required>
+                        
+                        <label for="payment-proof">Comprovante de Pagamento (URL da imagem):</label>
+                        <input type="url" id="payment-proof" required>
 
-                <button type="submit">Confirmar Pedido</button>
-            </form>
+                        <button type="submit">Confirmar Pedido</button>
+                    </form>
+                </div>
+                
+                <div class="checkout-summary">
+                    <h3>Resumo do Pedido</h3>
+                    <div id="checkout-items"></div>
+                    <div class="checkout-total">
+                        <strong>Total: R$ <span id="checkout-total">0.00</span></strong>
+                    </div>
+                    
+                    <div class="pix-info">
+                        <h4>Informações para Pagamento PIX</h4>
+                        <p><strong>Chave PIX:</strong> <span id="pix-key">[Configure sua chave PIX]</span></p>
+                        <p><strong>Valor a pagar:</strong> R$ <span id="pix-amount">0.00</span></p>
+                        <p class="pix-instructions">
+                            1. Faça o PIX para a chave acima<br>
+                            2. Tire um print do comprovante<br>
+                            3. Faça upload da imagem e cole o link no campo acima<br>
+                            4. Confirme o pedido
+                        </p>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section id="admin" class="hidden">
@@ -116,6 +109,17 @@
             <form id="product-form">
                 <h3>Adicionar/Editar Produto</h3>
                 <input type="hidden" id="product-id">
+
+                <label for="product-category">Categoria:</label>
+                <select id="product-category" required>
+                    <option value="">Selecione uma categoria</option>
+                    <option value="Semi-joias">Semi-joias</option>
+                    <option value="Anéis">Anéis</option>
+                    <option value="Colares">Colares</option>
+                    <option value="Brincos">Brincos</option>
+                    <option value="Pulseiras">Pulseiras</option>
+                    <option value="Conjuntos">Conjuntos</option>
+                </select>
 
                 <label for="product-name">Nome do Produto:</label>
                 <input type="text" id="product-name" required>
@@ -133,9 +137,9 @@
             </form>
 
             <h3>Produtos Cadastrados</h3>
-            <ul id="admin-product-list">
+            <div id="admin-product-list">
                 <!-- Produtos cadastrados serão listados aqui -->
-            </ul>
+            </div>
         </section>
     </main>
 
