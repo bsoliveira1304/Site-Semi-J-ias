@@ -1,25 +1,14 @@
 [
   {
     "id": 1,
-    "name": "Martelo",
-    "description": "Martelo de aço com cabo emborrachado.",
-    "price": 25.50,
-    "category": "Ferramentas Manuais",
-    "brand": "Tramontina",
+    "name": "Anel de Prata",
+    "description": "Anel de prata legítima",
+    "price": 125,2,
+    "category": "Anéis",
+    "brand": "",
     "stock": 20,
-    "image": "https://example.com/martelo.jpg",
-    "created_at": "2025-01-01T00:00:00Z"
-  },
-  {
-    "id": 9999,
-    "name": "Produto de Teste",
-    "description": "Este é um produto fictício usado apenas para testes no site.",
-    "price": 0.01,
-    "category": "Testes",
-    "brand": "Marca Genérica",
-    "stock": 10,
-    "image": "https://via.placeholder.com/300x300.png?text=Produto+de+Teste",
-    "created_at": "2025-06-09T00:00:00Z"
+    "image": "https://drive.google.com/uc?export=view&id=1hiaeJJVQ85Zi0H-JVDcObUlsjaEeI3qI",
+    "created_at": "2025-06-13T00:00:00Z"
   }
 ]
 
