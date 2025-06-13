@@ -256,7 +256,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Botão de exportar produtos
+          if (!document.getElementById("export-button")) {
         const exportButton = document.createElement("button");
+        exportButton.id = "export-button";
         exportButton.textContent = "Exportar produtos (JSON)";
         exportButton.style.marginTop = "15px";
         exportButton.addEventListener("click", () => {
