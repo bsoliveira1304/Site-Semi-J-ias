@@ -255,10 +255,8 @@ document.addEventListener("DOMContentLoaded", () => {
             adminProductList.appendChild(item);
         });
 
-            // Botão de exportar produtos (evita duplicação)
-    if (!document.getElementById("export-button")) {
+        // Botão de exportar produtos
         const exportButton = document.createElement("button");
-        exportButton.id = "export-button";
         exportButton.textContent = "Exportar produtos (JSON)";
         exportButton.style.marginTop = "15px";
         exportButton.addEventListener("click", () => {
@@ -269,8 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
             downloadAnchor.click();
         });
         adminSection.appendChild(exportButton);
-    }
-;
+    };
 
     loadProducts();
 });
