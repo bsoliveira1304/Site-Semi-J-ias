@@ -1,3 +1,10 @@
-[]
-
-
+[
+    {
+        "id": "1",
+        "category": "Anéis",
+        "name": "Anel de Prata",
+        "description": "Anel de prata legítima",
+        "price": 125.2,
+        "image": "https://i.imgur.com/ZHngCFA.jpeg"
+    }
+]
