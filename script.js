@@ -256,20 +256,18 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Botão de exportar produtos
-          if (!document.getElementById("export-button")) {
-        const exportButton = document.createElement("button");
-        exportButton.id = "export-button";
-        exportButton.textContent = "Exportar produtos (JSON)";
-        exportButton.style.marginTop = "15px";
-        exportButton.addEventListener("click", () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
-            const downloadAnchor = document.createElement("a");
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "products.json");
-            downloadAnchor.click();
-        });
-        adminSection.appendChild(exportButton);
-    };
+          const exportButton = document.createElement("button");
+    exportButton.textContent = "Exportar produtos (JSON)";
+    exportButton.style.marginTop = "15px";
+    exportButton.addEventListener("click", () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
+        const downloadAnchor = document.createElement("a");
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", "products.json");
+        downloadAnchor.click();
+    });
+    adminSection.appendChild(exportButton);
+};
 
     loadProducts();
 });
