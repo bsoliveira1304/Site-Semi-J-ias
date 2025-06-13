@@ -255,9 +255,16 @@ document.addEventListener("DOMContentLoaded", () => {
             adminProductList.appendChild(item);
         });
 
-        // Botão de exportar produtos
+        // Remove o botão exportador antigo, se existir, para evitar duplicatas
+        const existingExportBtn = adminSection.querySelector("button.export-btn");
+        if (existingExportBtn) {
+            existingExportBtn.remove();
+        }
+
+        // Cria o botão de exportar produtos e adiciona uma classe para controle
         const exportButton = document.createElement("button");
         exportButton.textContent = "Exportar produtos (JSON)";
+        exportButton.classList.add("export-btn");
         exportButton.style.marginTop = "15px";
         exportButton.addEventListener("click", () => {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
