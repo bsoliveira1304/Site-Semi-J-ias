@@ -30,5 +30,13 @@
     "description": "TESTE LEGAL 3",
     "price": 500,
     "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
+  },
+  {
+    "id": "1749828571358",
+    "category": "Anéis",
+    "name": "teste gle",
+    "description": "produto online",
+    "price": 125,
+    "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
   }
 ]
