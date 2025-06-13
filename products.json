@@ -1,10 +1,34 @@
 [
-    {
-        "id": "1",
-        "category": "Anéis",
-        "name": "Anel de Prata",
-        "description": "Anel de prata legítima",
-        "price": 125.2,
-        "image": "https://i.imgur.com/T32B7JM.jpeg"
-    }
+  {
+    "id": "1749819512963",
+    "category": "Anéis",
+    "name": "Anel de Prata",
+    "description": "Anel de prata legítima",
+    "price": 125.2,
+    "image": "https://i.imgur.com/ZHngCFA.jpeg"
+  },
+  {
+    "id": "1749828532373",
+    "category": "Pulseiras",
+    "name": "teste",
+    "description": "teste legal",
+    "price": 100,
+    "image": "https://i.imgur.com/ZHngCFA.jpeg"
+  },
+  {
+    "id": "1749828548127",
+    "category": "Colares",
+    "name": "TESTE 2",
+    "description": "TESTE LEGAL 2",
+    "price": 200,
+    "image": "https://i.imgur.com/ZHngCFA.jpeg"
+  },
+  {
+    "id": "1749828571357",
+    "category": "Conjuntos",
+    "name": "TESTE 3",
+    "description": "TESTE LEGAL 3",
+    "price": 500,
+    "image": "https://i.imgur.com/ZHngCFA.jpeg"
+  }
 ]
