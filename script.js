@@ -19,7 +19,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const checkoutItemsDiv = document.getElementById("checkout-items");
     const checkoutTotalSpan = document.getElementById("checkout-total");
-    const pixKeyInput = document.getElementById("pix-key-input");
 
     let products = [];
     let cart = [];
@@ -295,39 +294,10 @@ document.addEventListener("DOMContentLoaded", () => {
         adminSection.classList.add("hidden");
         checkoutSection.classList.remove("hidden");
         renderCheckoutSummary();
-        
-        // Carrega chave PIX salva se existir
-        const savedPixKey = localStorage.getItem("pixKey");
-        if (savedPixKey) {
-            pixKeyInput.value = savedPixKey;
-            pixKeySpan.textContent = savedPixKey;
-        }
-    });
-
-    // Event listener para atualizar chave PIX em tempo real
-    pixKeyInput.addEventListener("input", (e) => {
-        const pixKey = e.target.value;
-        pixKeySpan.textContent = pixKey || "[Configure sua chave PIX]";
-        if (pixKey) {
-            localStorage.setItem("pixKey", pixKey);
-        }
     });
 
     checkoutForm.addEventListener("submit", (e) => {
         e.preventDefault();
-        
-        // Validações adicionais
-        const pixKey = pixKeyInput.value.trim();
-        if (!pixKey) {
-            alert("Por favor, configure sua chave PIX.");
-            return;
-        }
-        
-        const paymentProof = document.getElementById("payment-proof").value.trim();
-        if (!paymentProof) {
-            alert("Por favor, forneça o link do comprovante de pagamento.");
-            return;
-        }
         
         const order = {
             id: Date.now().toString(),
@@ -337,13 +307,13 @@ document.addEventListener("DOMContentLoaded", () => {
             email: document.getElementById("email").value,
             items: cart,
             total: parseFloat(checkoutTotalSpan.textContent),
-            pixKey: pixKey,
-            paymentProof: paymentProof,
+            pixKey: "707.417.241-38",
+            favorecido: "Glennys Garcia Moya",
             timestamp: new Date().toISOString()
         };
         orders.push(order);
         saveOrders();
-        alert("Pedido realizado com sucesso! Sua noiva receberá as informações em breve.");
+        alert("Pedido realizado com sucesso! Envie o comprovante PIX para o WhatsApp (11) 96433-8381. Glennys entrará em contato em breve!");
         console.log("Novo Pedido:", order);
         cart = [];
         saveCart();
