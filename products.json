@@ -1,42 +1,67 @@
 [
-  {
-    "id": "1749819512963",
-    "category": "Anéis",
-    "name": "Anel de Prata",
-    "description": "Anel de prata legítima",
-    "price": 125.2,
-    "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
-  },
-  {
-    "id": "1749828532373",
-    "category": "Pulseiras",
-    "name": "teste",
-    "description": "teste legal",
-    "price": 100,
-    "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
-  },
-  {
-    "id": "1749828548127",
-    "category": "Colares",
-    "name": "TESTE 2",
-    "description": "TESTE LEGAL 2",
-    "price": 200,
-    "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
-  },
-  {
-    "id": "1749828571357",
-    "category": "Conjuntos",
-    "name": "TESTE 3",
-    "description": "TESTE LEGAL 3",
-    "price": 500,
-    "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
-  },
-  {
-    "id": "1749828571358",
-    "category": "Anéis",
-    "name": "teste gle",
-    "description": "produto online",
-    "price": 125,
-    "image": "https://raw.githubusercontent.com/bsoliveira1304/Site-Semi-J-ias/main/images/anel%20teste.jpeg"
-  }
+    {
+        "id": 1,
+        "name": "Anel de Prata Elegante",
+        "description": "Anel de prata legítima com design moderno e sofisticado, perfeito para ocasiões especiais",
+        "price": 125.20,
+        "image": "images/jewelry-rings.jpg",
+        "category": "Anéis"
+    },
+    {
+        "id": 2,
+        "name": "Colar Dourado Delicado",
+        "description": "Colar folheado a ouro com pingente em formato de coração, ideal para o dia a dia",
+        "price": 89.90,
+        "image": "images/jewelry-necklaces.jpg",
+        "category": "Colares"
+    },
+    {
+        "id": 3,
+        "name": "Pulseira Charm Dourada",
+        "description": "Pulseira com charms delicados, perfeita para compor looks elegantes",
+        "price": 156.50,
+        "image": "images/jewelry-bracelets.jpg",
+        "category": "Pulseiras"
+    },
+    {
+        "id": 4,
+        "name": "Conjunto Completo Dourado",
+        "description": "Conjunto com colar, brincos e pulseira em tom dourado, para ocasiões especiais",
+        "price": 299.90,
+        "image": "images/jewelry-set-1.jpg",
+        "category": "Conjuntos"
+    },
+    {
+        "id": 5,
+        "name": "Brincos Argola Dourados",
+        "description": "Brincos argola em tom dourado, clássicos e versáteis para qualquer ocasião",
+        "price": 67.80,
+        "image": "images/jewelry-rings.jpg",
+        "category": "Brincos"
+    },
+    {
+        "id": 6,
+        "name": "Anel Solitário Prata",
+        "description": "Anel solitário em prata com pedra cristal, elegante e sofisticado",
+        "price": 198.00,
+        "image": "images/jewelry-rings.jpg",
+        "category": "Anéis"
+    },
+    {
+        "id": 7,
+        "name": "Colar Corrente Grossa",
+        "description": "Colar corrente grossa dourada, tendência atual para looks modernos",
+        "price": 134.90,
+        "image": "images/jewelry-necklaces.jpg",
+        "category": "Colares"
+    },
+    {
+        "id": 8,
+        "name": "Pulseira Tênis Dourada",
+        "description": "Pulseira tênis com pedras cristal, brilho e elegância em uma só peça",
+        "price": 245.00,
+        "image": "images/jewelry-bracelets.jpg",
+        "category": "Pulseiras"
+    }
 ]
+

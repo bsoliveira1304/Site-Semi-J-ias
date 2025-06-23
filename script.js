@@ -1,5 +1,5 @@
-
 document.addEventListener("DOMContentLoaded", () => {
+    // Elementos do DOM
     const productListDiv = document.getElementById("product-list");
     const productDetailSection = document.getElementById("product-detail");
     const detailContentDiv = document.getElementById("detail-content");
@@ -7,6 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const cartSection = document.getElementById("cart");
     const cartItemsDiv = document.getElementById("cart-items");
     const cartTotalSpan = document.getElementById("cart-total");
+    const cartSubtotalSpan = document.getElementById("cart-subtotal");
+    const cartCountSpan = document.getElementById("cart-count");
     const checkoutButton = document.getElementById("checkout-button");
     const checkoutSection = document.getElementById("checkout");
     const checkoutForm = document.getElementById("checkout-form");
@@ -18,263 +20,540 @@ document.addEventListener("DOMContentLoaded", () => {
     const categoryFilter = document.getElementById("category-filter");
     const checkoutItemsDiv = document.getElementById("checkout-items");
     const checkoutTotalSpan = document.getElementById("checkout-total");
+    const clearCartButton = document.getElementById("clear-cart");
 
+    // Variáveis globais
     let products = [];
-    let cart = [];
-    let orders = [];
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let orders = JSON.parse(localStorage.getItem('orders')) || [];
 
+    // Inicialização
+    loadProducts();
+    updateCartDisplay();
+    setupEventListeners();
+
+    // Carregamento de produtos
     const loadProducts = async () => {
         try {
             const response = await fetch('products.json');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             products = await response.json();
-            renderProducts();
-            renderAdminProducts();
-            updateCategoryFilter();
         } catch (error) {
             console.error("Erro ao carregar produtos:", error);
-            productListDiv.innerHTML = "<p>Erro ao carregar produtos.</p>";
+            // Produtos padrão caso não consiga carregar
+            products = [
+                {
+                    id: 1,
+                    name: "Anel de Prata Elegante",
+                    description: "Anel de prata legítima com design moderno e sofisticado",
+                    price: 125.20,
+                    image: "images/jewelry-rings.jpg",
+                    category: "Anéis"
+                },
+                {
+                    id: 2,
+                    name: "Colar Dourado Delicado",
+                    description: "Colar folheado a ouro com pingente em formato de coração",
+                    price: 89.90,
+                    image: "images/jewelry-necklaces.jpg",
+                    category: "Colares"
+                },
+                {
+                    id: 3,
+                    name: "Pulseira Charm Dourada",
+                    description: "Pulseira com charms delicados, perfeita para o dia a dia",
+                    price: 156.50,
+                    image: "images/jewelry-bracelets.jpg",
+                    category: "Pulseiras"
+                },
+                {
+                    id: 4,
+                    name: "Conjunto Completo Dourado",
+                    description: "Conjunto com colar, brincos e pulseira em tom dourado",
+                    price: 299.90,
+                    image: "images/jewelry-set-1.jpg",
+                    category: "Conjuntos"
+                }
+            ];
         }
+        renderProducts();
+        renderAdminProducts();
+        updateCategoryFilter();
     };
 
+    // Renderização de produtos
     const renderProducts = (productsToRender = products) => {
         productListDiv.innerHTML = "";
+        
+        if (productsToRender.length === 0) {
+            productListDiv.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
+                    <p style="font-size: 1.2rem; color: var(--text-light);">Nenhum produto encontrado.</p>
+                </div>
+            `;
+            return;
+        }
+
         productsToRender.forEach(product => {
             const productCard = document.createElement("div");
             productCard.classList.add("product-card");
             productCard.innerHTML = `
-                <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null;this.src='https://via.placeholder.com/300x300?text=Imagem+Nao+Disponivel';">
-                ${product.category ? `<div class="category">${product.category}</div>` : ''}
-                <h3>${product.name}</h3>
-                <p>${product.description}</p>
-                <p class="price">R$ ${product.price.toFixed(2)}</p>
-                <button data-id="${product.id}" class="add-to-cart">Adicionar ao Carrinho</button>
-                <button data-id="${product.id}" class="view-details">Ver Detalhes</button>
+                <img src="${product.image}" alt="${product.name}" 
+                     onerror="this.onerror=null;this.src='https://via.placeholder.com/300x300/d4af37/ffffff?text=Semi-joia';">
+                <div class="product-card-content">
+                    ${product.category ? `<div class="category">${product.category}</div>` : ''}
+                    <h3>${product.name}</h3>
+                    <p>${product.description}</p>
+                    <div class="price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
+                    <div class="product-actions">
+                        <button onclick="addToCart(${product.id})" class="btn-primary">
+                            <i class="fas fa-shopping-cart"></i> Adicionar
+                        </button>
+                        <button onclick="showProductDetail(${product.id})" class="btn-secondary">
+                            <i class="fas fa-eye"></i> Detalhes
+                        </button>
+                    </div>
+                </div>
             `;
             productListDiv.appendChild(productCard);
+        });
+    };
 
-            productCard.querySelector(".add-to-cart").addEventListener("click", (e) => {
-                addToCart(e.target.dataset.id);
+    // Detalhes do produto
+    window.showProductDetail = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        detailContentDiv.innerHTML = `
+            <div class="product-detail-image">
+                <img src="${product.image}" alt="${product.name}" 
+                     onerror="this.onerror=null;this.src='https://via.placeholder.com/500x500/d4af37/ffffff?text=Semi-joia';">
+            </div>
+            <div class="product-detail-info">
+                ${product.category ? `<div class="category">${product.category}</div>` : ''}
+                <h2>${product.name}</h2>
+                <p class="product-description">${product.description}</p>
+                <div class="price-section">
+                    <div class="price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
+                    <div class="payment-options">
+                        <p><i class="fas fa-qrcode"></i> PIX: R$ ${(product.price * 0.9).toFixed(2).replace('.', ',')} (10% desconto)</p>
+                        <p><i class="fas fa-credit-card"></i> Cartão: até 12x sem juros</p>
+                    </div>
+                </div>
+                <div class="product-actions">
+                    <button onclick="addToCart(${product.id})" class="btn-primary btn-large">
+                        <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
+                    </button>
+                    <a href="https://wa.me/5511964338381?text=Olá! Tenho interesse no produto: ${encodeURIComponent(product.name)}" 
+                       target="_blank" class="btn-secondary btn-large">
+                        <i class="fab fa-whatsapp"></i> Consultar no WhatsApp
+                    </a>
+                </div>
+            </div>
+        `;
+
+        showSection('product-detail');
+    };
+
+    // Carrinho de compras
+    window.addToCart = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        const existingItem = cart.find(item => item.id === productId);
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({ ...product, quantity: 1 });
+        }
+
+        saveCart();
+        updateCartDisplay();
+        showNotification(`${product.name} adicionado ao carrinho!`, 'success');
+    };
+
+    const updateCartDisplay = () => {
+        // Atualizar contador do carrinho
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        cartCountSpan.textContent = totalItems;
+
+        // Renderizar itens do carrinho
+        cartItemsDiv.innerHTML = "";
+        
+        if (cart.length === 0) {
+            cartItemsDiv.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <i class="fas fa-shopping-cart" style="font-size: 3rem; color: var(--text-light); margin-bottom: 20px;"></i>
+                    <p style="font-size: 1.2rem; color: var(--text-light);">Seu carrinho está vazio</p>
+                    <a href="#products" onclick="showSection('products')" class="btn-primary" style="margin-top: 20px;">
+                        Continuar Comprando
+                    </a>
+                </div>
+            `;
+        } else {
+            cart.forEach(item => {
+                const cartItem = document.createElement("div");
+                cartItem.classList.add("cart-item");
+                cartItem.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}" 
+                         onerror="this.onerror=null;this.src='https://via.placeholder.com/80x80/d4af37/ffffff?text=Item';">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">R$ ${item.price.toFixed(2).replace('.', ',')}</div>
+                    </div>
+                    <div class="cart-item-quantity">
+                        <button onclick="updateQuantity(${item.id}, -1)" class="quantity-btn">-</button>
+                        <span class="quantity-display">${item.quantity}</span>
+                        <button onclick="updateQuantity(${item.id}, 1)" class="quantity-btn">+</button>
+                    </div>
+                    <div class="cart-item-total">
+                        R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}
+                    </div>
+                    <button onclick="removeFromCart(${item.id})" class="remove-item-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                cartItemsDiv.appendChild(cartItem);
             });
-            productCard.querySelector(".view-details").addEventListener("click", (e) => {
-                showProductDetails(e.target.dataset.id);
+        }
+
+        // Atualizar totais
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cartSubtotalSpan.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+        cartTotalSpan.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+        
+        // Atualizar checkout
+        updateCheckoutDisplay();
+    };
+
+    window.updateQuantity = (productId, change) => {
+        const item = cart.find(item => item.id === productId);
+        if (!item) return;
+
+        item.quantity += change;
+        if (item.quantity <= 0) {
+            removeFromCart(productId);
+        } else {
+            saveCart();
+            updateCartDisplay();
+        }
+    };
+
+    window.removeFromCart = (productId) => {
+        cart = cart.filter(item => item.id !== productId);
+        saveCart();
+        updateCartDisplay();
+        showNotification('Item removido do carrinho', 'info');
+    };
+
+    // Checkout
+    const updateCheckoutDisplay = () => {
+        checkoutItemsDiv.innerHTML = "";
+        
+        cart.forEach(item => {
+            const checkoutItem = document.createElement("div");
+            checkoutItem.classList.add("checkout-item");
+            checkoutItem.innerHTML = `
+                <span>${item.name} (${item.quantity}x)</span>
+                <span>R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+            `;
+            checkoutItemsDiv.appendChild(checkoutItem);
+        });
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const pixTotal = total * 0.9; // 10% desconto PIX
+        
+        checkoutTotalSpan.textContent = total.toFixed(2).replace('.', ',');
+        pixAmountSpan.textContent = pixTotal.toFixed(2).replace('.', ',');
+    };
+
+    // Navegação
+    const showSection = (sectionName) => {
+        // Esconder todas as seções
+        document.querySelectorAll('main > section').forEach(section => {
+            section.classList.add('hidden');
+        });
+
+        // Mostrar seção específica
+        const targetSection = document.getElementById(sectionName);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+        }
+
+        // Scroll para o topo
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Event Listeners
+    const setupEventListeners = () => {
+        // Navegação
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('href').substring(1);
+                showSection(target);
             });
         });
+
+        // Botões de navegação
+        backToProductsButton.addEventListener('click', () => showSection('products'));
+        
+        // Busca e filtros
+        searchInput.addEventListener('input', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
+
+        // Carrinho
+        clearCartButton.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar o carrinho?')) {
+                cart = [];
+                saveCart();
+                updateCartDisplay();
+                showNotification('Carrinho limpo', 'info');
+            }
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            if (cart.length === 0) {
+                showNotification('Seu carrinho está vazio!', 'error');
+                return;
+            }
+            showSection('checkout');
+        });
+
+        // Checkout form
+        checkoutForm.addEventListener('submit', handleCheckout);
+
+        // Admin form
+        productForm.addEventListener('submit', handleProductSubmit);
+    };
+
+    // Filtros
+    const filterProducts = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+
+        const filteredProducts = products.filter(product => {
+            const matchesSearch = product.name.toLowerCase().includes(searchTerm) ||
+                                product.description.toLowerCase().includes(searchTerm);
+            const matchesCategory = !selectedCategory || product.category === selectedCategory;
+            
+            return matchesSearch && matchesCategory;
+        });
+
+        renderProducts(filteredProducts);
     };
 
     const updateCategoryFilter = () => {
         const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+        
         categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
         categories.forEach(category => {
-            const option = document.createElement("option");
+            const option = document.createElement('option');
             option.value = category;
             option.textContent = category;
             categoryFilter.appendChild(option);
         });
     };
 
-    const filterProducts = () => {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedCategory = categoryFilter.value;
-        const filtered = products.filter(product =>
-            (product.name.toLowerCase().includes(searchTerm) ||
-             product.description.toLowerCase().includes(searchTerm)) &&
-            (!selectedCategory || product.category === selectedCategory)
-        );
-        renderProducts(filtered);
-    };
-
-    searchInput.addEventListener("input", filterProducts);
-    categoryFilter.addEventListener("change", filterProducts);
-
-    const addToCart = (productId) => {
-        const product = products.find(p => p.id == productId);
-        if (product) {
-            const item = cart.find(i => i.id == productId);
-            if (item) item.quantity++;
-            else cart.push({ ...product, quantity: 1 });
-            renderCart();
-            alert(`${product.name} adicionado ao carrinho!`);
-        }
-    };
-
-    const renderCart = () => {
-        cartItemsDiv.innerHTML = "";
-        let total = 0;
+    // Checkout
+    const handleCheckout = (e) => {
+        e.preventDefault();
+        
         if (cart.length === 0) {
-            cartItemsDiv.innerHTML = "<p>Seu carrinho está vazio.</p>";
-        } else {
-            cart.forEach(item => {
-                const itemDiv = document.createElement("div");
-                itemDiv.classList.add("cart-item");
-                itemDiv.innerHTML = `
-                    <div class="cart-item-info">
-                        <div class="cart-item-name">${item.name}</div>
-                        <div class="cart-item-price">R$ ${item.price.toFixed(2)} cada</div>
-                    </div>
-                    <div class="cart-item-quantity">
-                        <button class="quantity-btn decrease-qty" data-id="${item.id}">-</button>
-                        <span class="quantity-display">${item.quantity}</span>
-                        <button class="quantity-btn increase-qty" data-id="${item.id}">+</button>
-                    </div>
-                    <div class="cart-item-actions">
-                        <span class="item-total">R$ ${(item.price * item.quantity).toFixed(2)}</span>
-                        <button data-id="${item.id}" class="remove-item-btn">Remover</button>
-                    </div>
-                `;
-                cartItemsDiv.appendChild(itemDiv);
-                total += item.price * item.quantity;
-            });
+            showNotification('Seu carrinho está vazio!', 'error');
+            return;
         }
-        cartTotalSpan.textContent = total.toFixed(2);
-        document.querySelectorAll(".increase-qty").forEach(btn => btn.addEventListener("click", e => changeQty(e, 1)));
-        document.querySelectorAll(".decrease-qty").forEach(btn => btn.addEventListener("click", e => changeQty(e, -1)));
-        document.querySelectorAll(".remove-item-btn").forEach(btn => btn.addEventListener("click", e => removeItem(e)));
-    };
 
-    const changeQty = (e, delta) => {
-        const item = cart.find(i => i.id == e.target.dataset.id);
-        if (item) {
-            item.quantity += delta;
-            if (item.quantity <= 0) cart = cart.filter(i => i.id != item.id);
-            renderCart();
-        }
-    };
+        const formData = new FormData(checkoutForm);
+        const orderData = {
+            id: Date.now(),
+            date: new Date().toISOString(),
+            customer: {
+                name: formData.get('name') || document.getElementById('name').value,
+                email: formData.get('email') || document.getElementById('email').value,
+                phone: formData.get('phone') || document.getElementById('phone').value,
+                address: formData.get('address') || document.getElementById('address').value
+            },
+            items: [...cart],
+            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            status: 'pending'
+        };
 
-    const removeItem = (e) => {
-        cart = cart.filter(i => i.id != e.target.dataset.id);
-        renderCart();
-    };
+        // Salvar pedido
+        orders.push(orderData);
+        localStorage.setItem('orders', JSON.stringify(orders));
 
-    document.getElementById("clear-cart").addEventListener("click", () => {
-        if (cart.length && confirm("Limpar o carrinho?")) {
-            cart = [];
-            renderCart();
-        }
-    });
+        // Criar mensagem para WhatsApp
+        const whatsappMessage = createWhatsAppMessage(orderData);
+        const whatsappUrl = `https://wa.me/5511964338381?text=${encodeURIComponent(whatsappMessage)}`;
 
-    checkoutButton.addEventListener("click", () => {
-        if (!cart.length) return alert("Seu carrinho está vazio.");
-        document.getElementById("products").classList.add("hidden");
-        cartSection.classList.add("hidden");
-        checkoutSection.classList.remove("hidden");
-        renderCheckoutSummary();
-    });
-
-    const renderCheckoutSummary = () => {
-        checkoutItemsDiv.innerHTML = "";
-        let total = 0;
-        cart.forEach(item => {
-            checkoutItemsDiv.innerHTML += `
-                <div class="checkout-item">
-                    <span>${item.name} (x${item.quantity})</span>
-                    <span>R$ ${(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-            `;
-            total += item.price * item.quantity;
-        });
-        checkoutTotalSpan.textContent = total.toFixed(2);
-        pixAmountSpan.textContent = total.toFixed(2);
-    };
-
-    checkoutForm.addEventListener("submit", (e) => {
-        e.preventDefault();
+        // Limpar carrinho
         cart = [];
-        renderCart();
-        checkoutForm.reset();
-        alert("Pedido confirmado! Envie o comprovante do PIX.");
-        checkoutSection.classList.add("hidden");
-        document.getElementById("products").classList.remove("hidden");
-    });
+        saveCart();
+        updateCartDisplay();
 
-    const showProductDetails = (productId) => {
-        const product = products.find(p => p.id == productId);
-        if (product) {
-            detailContentDiv.innerHTML = `
-                <img src="${product.image}" alt="${product.name}">
-                <h2>${product.name}</h2>
-                <p>${product.description}</p>
-                <p class="price">R$ ${product.price.toFixed(2)}</p>
-                <button data-id="${product.id}" class="add-to-cart">Adicionar ao Carrinho</button>
-            `;
-            detailContentDiv.querySelector(".add-to-cart").addEventListener("click", (e) => {
-                addToCart(e.target.dataset.id);
-            });
-            productDetailSection.classList.remove("hidden");
-            document.getElementById("products").classList.add("hidden");
-        }
+        // Mostrar confirmação e redirecionar
+        showNotification('Pedido confirmado! Redirecionando para WhatsApp...', 'success');
+        
+        setTimeout(() => {
+            window.open(whatsappUrl, '_blank');
+            showSection('products');
+        }, 2000);
     };
 
-    backToProductsButton.addEventListener("click", () => {
-        productDetailSection.classList.add("hidden");
-        document.getElementById("products").classList.remove("hidden");
-    });
+    const createWhatsAppMessage = (order) => {
+        let message = `🛍️ *NOVO PEDIDO - Semi-joias da Glennys*\\n\\n`;
+        message += `👤 *Cliente:* ${order.customer.name}\\n`;
+        message += `📧 *Email:* ${order.customer.email}\\n`;
+        message += `📱 *Telefone:* ${order.customer.phone}\\n`;
+        message += `📍 *Endereço:* ${order.customer.address}\\n\\n`;
+        
+        message += `🛒 *Itens do Pedido:*\\n`;
+        order.items.forEach(item => {
+            message += `• ${item.name} (${item.quantity}x) - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\\n`;
+        });
+        
+        message += `\\n💰 *Total:* R$ ${order.total.toFixed(2).replace('.', ',')}\\n`;
+        message += `💳 *PIX (10% desc):* R$ ${(order.total * 0.9).toFixed(2).replace('.', ',')}\\n\\n`;
+        message += `📅 *Data:* ${new Date(order.date).toLocaleString('pt-BR')}\\n`;
+        message += `🆔 *Pedido:* #${order.id}`;
 
-    document.querySelector("nav ul li a[href='#products']").addEventListener("click", (e) => {
-        e.preventDefault();
-        productDetailSection.classList.add("hidden");
-        cartSection.classList.add("hidden");
-        checkoutSection.classList.add("hidden");
-        adminSection.classList.add("hidden");
-        document.getElementById("products").classList.remove("hidden");
-    });
+        return message;
+    };
 
-    document.querySelector("nav ul li a[href='#cart']").addEventListener("click", (e) => {
+    // Administração
+    const handleProductSubmit = (e) => {
         e.preventDefault();
-        renderCart();
-        productDetailSection.classList.add("hidden");
-        checkoutSection.classList.add("hidden");
-        adminSection.classList.add("hidden");
-        document.getElementById("products").classList.add("hidden");
-        cartSection.classList.remove("hidden");
-    });
+        
+        const productData = {
+            id: document.getElementById('product-id').value || Date.now(),
+            name: document.getElementById('product-name').value,
+            description: document.getElementById('product-description').value,
+            price: parseFloat(document.getElementById('product-price').value),
+            image: document.getElementById('product-image').value,
+            category: document.getElementById('product-category').value
+        };
 
-    document.querySelector("nav ul li a[href='#admin']").addEventListener("click", (e) => {
-        e.preventDefault();
-        const password = prompt("Digite a senha para acessar a administração:");
-        if (password === "suasenha123") {
-            productDetailSection.classList.add("hidden");
-            cartSection.classList.add("hidden");
-            checkoutSection.classList.add("hidden");
-            document.getElementById("products").classList.add("hidden");
-            adminSection.classList.remove("hidden");
-            renderAdminProducts();
+        const existingIndex = products.findIndex(p => p.id == productData.id);
+        if (existingIndex >= 0) {
+            products[existingIndex] = productData;
+            showNotification('Produto atualizado com sucesso!', 'success');
         } else {
-            alert("Senha incorreta!");
+            products.push(productData);
+            showNotification('Produto adicionado com sucesso!', 'success');
         }
-    });
+
+        saveProducts();
+        renderProducts();
+        renderAdminProducts();
+        updateCategoryFilter();
+        productForm.reset();
+    };
 
     const renderAdminProducts = () => {
         adminProductList.innerHTML = "";
+        
         products.forEach(product => {
-            const item = document.createElement("div");
-            item.classList.add("admin-product-item");
-            item.innerHTML = `
-                <div class="product-info"><strong>${product.name}</strong> - R$ ${product.price.toFixed(2)}<br><small>Categoria: ${product.category}</small></div>
+            const productItem = document.createElement("div");
+            productItem.classList.add("admin-product-item");
+            productItem.innerHTML = `
+                <div class="product-info">
+                    <strong>${product.name}</strong><br>
+                    <small>${product.category} - R$ ${product.price.toFixed(2).replace('.', ',')}</small>
+                </div>
+                <div class="product-actions">
+                    <button onclick="editProduct(${product.id})" class="edit-product">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button onclick="deleteProduct(${product.id})" class="delete-product">
+                        <i class="fas fa-trash"></i> Excluir
+                    </button>
+                </div>
             `;
-            adminProductList.appendChild(item);
+            adminProductList.appendChild(productItem);
         });
-
-        // Remove o botão exportador antigo, se existir, para evitar duplicatas
-        const existingExportBtn = adminSection.querySelector("button.export-btn");
-        if (existingExportBtn) {
-            existingExportBtn.remove();
-        }
-
-        // Cria o botão de exportar produtos e adiciona uma classe para controle
-        const exportButton = document.createElement("button");
-        exportButton.textContent = "Exportar produtos (JSON)";
-        exportButton.classList.add("export-btn");
-        exportButton.style.marginTop = "15px";
-        exportButton.addEventListener("click", () => {
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(products, null, 2));
-            const downloadAnchor = document.createElement("a");
-            downloadAnchor.setAttribute("href", dataStr);
-            downloadAnchor.setAttribute("download", "products.json");
-            downloadAnchor.click();
-        });
-        adminSection.appendChild(exportButton);
     };
 
-    loadProducts();
+    window.editProduct = (productId) => {
+        const product = products.find(p => p.id == productId);
+        if (!product) return;
+
+        document.getElementById('product-id').value = product.id;
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-description').value = product.description;
+        document.getElementById('product-price').value = product.price;
+        document.getElementById('product-image').value = product.image;
+        document.getElementById('product-category').value = product.category;
+    };
+
+    window.deleteProduct = (productId) => {
+        if (confirm('Tem certeza que deseja excluir este produto?')) {
+            products = products.filter(p => p.id != productId);
+            saveProducts();
+            renderProducts();
+            renderAdminProducts();
+            updateCategoryFilter();
+            showNotification('Produto excluído com sucesso!', 'success');
+        }
+    };
+
+    // Utilitários
+    const saveCart = () => {
+        localStorage.setItem('cart', JSON.stringify(cart));
+    };
+
+    const saveProducts = () => {
+        localStorage.setItem('products', JSON.stringify(products));
+    };
+
+    const showNotification = (message, type = 'info') => {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+        
+        // Adicionar estilos se não existirem
+        if (!document.querySelector('#notification-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'notification-styles';
+            styles.textContent = `
+                .notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: 500;
+                    z-index: 10000;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    box-shadow: var(--shadow);
+                    animation: slideIn 0.3s ease;
+                }
+                .notification-success { background: var(--success-color); }
+                .notification-error { background: var(--error-color); }
+                .notification-info { background: var(--primary-color); }
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(styles);
+        }
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideIn 0.3s ease reverse';
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    };
+
+    // Inicializar com seção de produtos
+    showSection('products');
 });
+
