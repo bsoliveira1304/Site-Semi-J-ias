@@ -28,54 +28,119 @@ document.addEventListener("DOMContentLoaded", () => {
     let orders = JSON.parse(localStorage.getItem('orders')) || [];
 
     // Inicialização
-    loadProducts();
+    loadProducts(); // Carrega produtos do JSON primeiro, depois localStorage, ou fallback
     updateCartDisplay();
     setupEventListeners();
 
     // Carregamento de produtos
     const loadProducts = async () => {
+        let loadedFromJSON = false;
         try {
             const response = await fetch('./products.json');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             products = await response.json();
+            loadedFromJSON = true;
+            console.log("Produtos carregados do products.json");
         } catch (error) {
-            console.error("Erro ao carregar produtos:", error);
-            // Produtos padrão caso não consiga carregar
-            products = [
-                {
-                    id: 1,
-                    name: "Anel de Prata Elegante",
-                    description: "Anel de prata legítima com design moderno e sofisticado",
-                    price: 125.20,
-                    image: "images/jewelry-rings.jpg",
-                    category: "Anéis"
-                },
-                {
-                    id: 2,
-                    name: "Colar Dourado Delicado",
-                    description: "Colar folheado a ouro com pingente em formato de coração",
-                    price: 89.90,
-                    image: "images/jewelry-necklaces.jpg",
-                    category: "Colares"
-                },
-                {
-                    id: 3,
-                    name: "Pulseira Charm Dourada",
-                    description: "Pulseira com charms delicados, perfeita para o dia a dia",
-                    price: 156.50,
-                    image: "images/jewelry-bracelets.jpg",
-                    category: "Pulseiras"
-                },
-                {
-                    id: 4,
-                    name: "Conjunto Completo Dourado",
-                    description: "Conjunto com colar, brincos e pulseira em tom dourado",
-                    price: 299.90,
-                    image: "images/jewelry-set-1.jpg",
-                    category: "Conjuntos"
-                }
-            ];
+            console.error("Erro ao carregar produtos do products.json:", error);
+            // Se falhar, tenta carregar do localStorage
+            const storedProducts = localStorage.getItem('products');
+            if (storedProducts) {
+                products = JSON.parse(storedProducts);
+                console.log("Produtos carregados do localStorage como fallback.");
+            } else {
+                // Se não houver produtos em nenhum lugar, usa dados padrão
+                console.log("Nenhum produto encontrado, usando dados padrão.");
+                products = [
+                    {
+                        id: 1,
+                        name: "Anel de Prata Elegante",
+                        description: "Anel de prata legítima com design moderno e sofisticado, perfeito para ocasiões especiais",
+                        price: 125.20,
+                        image: "images/jewelry-rings.jpg",
+                        category: "Anéis"
+                    },
+                    {
+                        id: 2,
+                        name: "Colar Dourado Delicado",
+                        description: "Colar folheado a ouro com pingente em formato de coração, ideal para o dia a dia",
+                        price: 89.90,
+                        image: "images/jewelry-necklaces.jpg",
+                        category: "Colares"
+                    },
+                    {
+                        id: 3,
+                        name: "Pulseira Charm Dourada",
+                        description: "Pulseira com charms delicados, perfeita para compor looks elegantes",
+                        price: 156.50,
+                        image: "images/jewelry-bracelets.jpg",
+                        category: "Pulseiras"
+                    },
+                    {
+                        id: 4,
+                        name: "Conjunto Completo Dourado",
+                        description: "Conjunto com colar, brincos e pulseira em tom dourado, para ocasiões especiais",
+                        price: 299.90,
+                        image: "images/jewelry-set-1.jpg",
+                        category: "Conjuntos"
+                    },
+                    {
+                        id: 5,
+                        name: "Brincos Argola Dourados",
+                        description: "Brincos argola em tom dourado, clássicos e versáteis para qualquer ocasião",
+                        price: 67.80,
+                        image: "images/jewelry-rings.jpg",
+                        category: "Brincos"
+                    },
+                    {
+                        id: 6,
+                        name: "Anel Solitário Prata",
+                        description: "Anel solitário em prata com pedra cristal, elegante e sofisticado",
+                        price: 198.00,
+                        image: "images/jewelry-rings.jpg",
+                        category: "Anéis"
+                    },
+                    {
+                        id: 7,
+                        name: "Colar Corrente Grossa",
+                        description: "Colar corrente grossa dourada, tendência atual para looks modernos",
+                        price: 134.90,
+                        image: "images/jewelry-necklaces.jpg",
+                        category: "Colares"
+                    },
+                    {
+                        id: 8,
+                        name: "Pulseira Tênis Dourada",
+                        description: "Pulseira tênis com pedras cristal, brilho e elegância em uma só peça",
+                        price: 245.00,
+                        image: "images/jewelry-bracelets.jpg",
+                        category: "Pulseiras"
+                    }
+                ];
+                saveProducts(); // Salva os produtos padrão no localStorage para futuras sessões
+            }
         }
+        
+        // Se os produtos foram carregados do JSON, ainda verifica se há produtos modificados no localStorage
+        // Isso é para garantir que as alterações do admin sejam mantidas sobre o JSON original após o carregamento inicial
+        if (loadedFromJSON) {
+            const adminModifiedProducts = localStorage.getItem('products');
+            if (adminModifiedProducts) {
+                const parsedAdminProducts = JSON.parse(adminModifiedProducts);
+                // Mescla ou substitui, dependendo da sua estratégia.
+                // Aqui, vamos assumir que as edições no admin panel são as mais recentes
+                // e devem ser aplicadas sobre os produtos do JSON.
+                // Uma estratégia mais robusta envolveria IDs e timestamps.
+                // Por simplicidade, se o adminProducts tem produtos, eles prevalecem ou são mesclados.
+                
+                // Exemplo de mesclagem simples:
+                const mergedProducts = new Map(products.map(p => [p.id, p]));
+                parsedAdminProducts.forEach(p => mergedProducts.set(p.id, p));
+                products = Array.from(mergedProducts.values());
+                console.log("Produtos mesclados com alterações do localStorage.");
+            }
+        }
+
         renderProducts();
         renderAdminProducts();
         updateCategoryFilter();
@@ -106,10 +171,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <p>${product.description}</p>
                     <div class="price">R$ ${product.price.toFixed(2).replace('.', ',')}</div>
                     <div class="product-actions">
-                        <button onclick="addToCart(${product.id})" class="btn-primary">
+                        <button onclick="window.addToCart(${product.id})" class="btn-primary">
                             <i class="fas fa-shopping-cart"></i> Adicionar
                         </button>
-                        <button onclick="showProductDetail(${product.id})" class="btn-secondary">
+                        <button onclick="window.showProductDetail(${product.id})" class="btn-secondary">
                             <i class="fas fa-eye"></i> Detalhes
                         </button>
                     </div>
@@ -141,7 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     </div>
                 </div>
                 <div class="product-actions">
-                    <button onclick="addToCart(${product.id})" class="btn-primary btn-large">
+                    <button onclick="window.addToCart(${product.id})" class="btn-primary btn-large">
                         <i class="fas fa-shopping-cart"></i> Adicionar ao Carrinho
                     </button>
                     <a href="https://wa.me/5511964338381?text=Olá! Tenho interesse no produto: ${encodeURIComponent(product.name)}" 
@@ -202,14 +267,14 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="cart-item-price">R$ ${item.price.toFixed(2).replace('.', ',')}</div>
                     </div>
                     <div class="cart-item-quantity">
-                        <button onclick="updateQuantity(${item.id}, -1)" class="quantity-btn">-</button>
+                        <button onclick="window.updateQuantity(${item.id}, -1)" class="quantity-btn">-</button>
                         <span class="quantity-display">${item.quantity}</span>
-                        <button onclick="updateQuantity(${item.id}, 1)" class="quantity-btn">+</button>
+                        <button onclick="window.updateQuantity(${item.id}, 1)" class="quantity-btn">+</button>
                     </div>
                     <div class="cart-item-total">
                         R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}
                     </div>
-                    <button onclick="removeFromCart(${item.id})" class="remove-item-btn">
+                    <button onclick="window.removeFromCart(${item.id})" class="remove-item-btn">
                         <i class="fas fa-trash"></i>
                     </button>
                 `;
@@ -232,7 +297,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         item.quantity += change;
         if (item.quantity <= 0) {
-            removeFromCart(productId);
+            window.removeFromCart(productId);
         } else {
             saveCart();
             updateCartDisplay();
@@ -270,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Navegação
     const showSection = (sectionName) => {
         // Esconder todas as seções
-        document.querySelectorAll('main > section').forEach(section => {
+        document.querySelectorAll('main > section, header + section').forEach(section => { // Incluir a hero section
             section.classList.add('hidden');
         });
 
@@ -369,10 +434,10 @@ document.addEventListener("DOMContentLoaded", () => {
             id: Date.now(),
             date: new Date().toISOString(),
             customer: {
-                name: formData.get('name') || document.getElementById('name').value,
-                email: formData.get('email') || document.getElementById('email').value,
-                phone: formData.get('phone') || document.getElementById('phone').value,
-                address: formData.get('address') || document.getElementById('address').value
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
             },
             items: [...cart],
             total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
@@ -397,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
         
         setTimeout(() => {
             window.open(whatsappUrl, '_blank');
-            showSection('products');
+            showSection('products'); // Volta para a seção de produtos
         }, 2000);
     };
 
@@ -425,8 +490,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const handleProductSubmit = (e) => {
         e.preventDefault();
         
-        const productData = {
-            id: document.getElementById('product-id').value || Date.now(),
+        const productId = document.getElementById('product-id').value;
+        const newProductData = {
+            id: productId ? parseInt(productId) : Date.now(), // Garante que o ID seja numérico para comparação
             name: document.getElementById('product-name').value,
             description: document.getElementById('product-description').value,
             price: parseFloat(document.getElementById('product-price').value),
@@ -434,20 +500,21 @@ document.addEventListener("DOMContentLoaded", () => {
             category: document.getElementById('product-category').value
         };
 
-        const existingIndex = products.findIndex(p => p.id == productData.id);
+        const existingIndex = products.findIndex(p => p.id === newProductData.id);
         if (existingIndex >= 0) {
-            products[existingIndex] = productData;
+            products[existingIndex] = newProductData;
             showNotification('Produto atualizado com sucesso!', 'success');
         } else {
-            products.push(productData);
+            products.push(newProductData);
             showNotification('Produto adicionado com sucesso!', 'success');
         }
 
-        saveProducts();
+        saveProducts(); // Salva no localStorage para persistir alterações do admin
         renderProducts();
         renderAdminProducts();
         updateCategoryFilter();
         productForm.reset();
+        document.getElementById('product-id').value = ''; // Limpar ID escondido após salvar
     };
 
     const renderAdminProducts = () => {
@@ -462,10 +529,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     <small>${product.category} - R$ ${product.price.toFixed(2).replace('.', ',')}</small>
                 </div>
                 <div class="product-actions">
-                    <button onclick="editProduct(${product.id})" class="edit-product">
+                    <button onclick="window.editProduct(${product.id})" class="edit-product">
                         <i class="fas fa-edit"></i> Editar
                     </button>
-                    <button onclick="deleteProduct(${product.id})" class="delete-product">
+                    <button onclick="window.deleteProduct(${product.id})" class="delete-product">
                         <i class="fas fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -475,7 +542,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     window.editProduct = (productId) => {
-        const product = products.find(p => p.id == productId);
+        const product = products.find(p => p.id === productId);
         if (!product) return;
 
         document.getElementById('product-id').value = product.id;
@@ -488,8 +555,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.deleteProduct = (productId) => {
         if (confirm('Tem certeza que deseja excluir este produto?')) {
-            products = products.filter(p => p.id != productId);
-            saveProducts();
+            products = products.filter(p => p.id !== productId);
+            saveProducts(); // Salva no localStorage para persistir alterações do admin
             renderProducts();
             renderAdminProducts();
             updateCategoryFilter();
@@ -532,7 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     align-items: center;
                     gap: 10px;
                     box-shadow: var(--shadow);
-                    animation: slideIn 0.3s ease;
+                    animation: slideIn 0.3s ease forwards; /* Usar forwards para manter o estado final */
                 }
                 .notification-success { background: var(--success-color); }
                 .notification-error { background: var(--error-color); }
@@ -541,6 +608,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     from { transform: translateX(100%); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
                 }
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
             `;
             document.head.appendChild(styles);
         }
@@ -548,16 +619,15 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            notification.style.animation = 'slideIn 0.3s ease reverse';
+            notification.style.animation = 'slideOut 0.3s ease forwards'; // Animação de saída
             setTimeout(() => notification.remove(), 300);
         }, 3000);
     };
 
-    // Inicializar com seção de produtos
+    // Inicializar com seção de produtos ao carregar a página
     showSection('products');
+
+    // Tornar funções globais após o DOM estar carregado
+    // Isso garante que elas estão disponíveis para os atributos onclick no HTML
+    window.showSection = showSection;
 });
-
-
-
-// Torna a função showSection acessível globalmente
-window.showSection = showSection;
