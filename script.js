@@ -384,4 +384,245 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         // Atualizar totais
-        const subtotal = cart.reduce
+        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        cartSubtotalSpan.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+        cartTotalSpan.textContent = `R$ ${subtotal.toFixed(2).replace('.', ',')}`;
+
+        // Atualizar checkout
+        updateCheckoutDisplay();
+    };
+
+    // Carrinho de compras: Atualizar quantidade
+    window.updateQuantity = (productId, change) => {
+        const item = cart.find(item => item.id === productId);
+        if (!item) return;
+
+        item.quantity += change;
+        if (item.quantity <= 0) {
+            window.removeFromCart(productId);
+        } else {
+            saveCart();
+            updateCartDisplay();
+        }
+    };
+
+    // Carrinho de compras: Remover item
+    window.removeFromCart = (productId) => {
+        cart = cart.filter(item => item.id !== productId);
+        saveCart();
+        updateCartDisplay();
+        showNotification('Item removido do carrinho', 'info');
+    };
+
+    // Checkout: Atualizar display
+    const updateCheckoutDisplay = () => {
+        checkoutItemsDiv.innerHTML = "";
+
+        cart.forEach(item => {
+            const checkoutItem = document.createElement("div");
+            checkoutItem.classList.add("checkout-item");
+            checkoutItem.innerHTML = `
+                <span>${item.name} (${item.quantity}x)</span>
+                <span>R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}</span>
+            `;
+            checkoutItemsDiv.appendChild(checkoutItem);
+        });
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const pixTotal = total * 0.9; // 10% desconto PIX
+
+        checkoutTotalSpan.textContent = total.toFixed(2).replace('.', ',');
+        pixAmountSpan.textContent = pixTotal.toFixed(2).replace('.', ',');
+    };
+
+    // Navegação entre seções
+    const showSection = (sectionName) => {
+        // Esconder todas as seções
+        document.querySelectorAll('main > section, header + section').forEach(section => {
+            section.classList.add('hidden');
+        });
+
+        // Mostrar seção específica
+        const targetSection = document.getElementById(sectionName);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+        }
+
+        // Scroll para o topo
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Checkout: Criar mensagem para WhatsApp
+    const createWhatsAppMessage = (order) => {
+        let message = `🛍️ *NOVO PEDIDO - Semi-joias da Glennys*\\n\\n`;
+        message += `👤 *Cliente:* ${order.customer.name}\\n`;
+        message += `📧 *Email:* ${order.customer.email}\\n`;
+        message += `📱 *Telefone:* ${order.customer.phone}\\n`;
+        message += `📍 *Endereço:* ${order.customer.address}\\n\\n`;
+
+        message += `🛒 *Itens do Pedido:*\\n`;
+        order.items.forEach(item => {
+            message += `• ${item.name} (${item.quantity}x) - R$ ${(item.price * item.quantity).toFixed(2).replace('.', ',')}\\n`;
+        });
+
+        message += `\\n💰 *Total:* R$ ${order.total.toFixed(2).replace('.', ',')}\\n`;
+        message += `💳 *PIX (10% desc):* R$ ${(order.total * 0.9).toFixed(2).replace('.', ',')}\\n\\n`;
+        message += `📅 *Data:* ${new Date(order.date).toLocaleString('pt-BR')}\\n`;
+        message += `🆔 *Pedido:* #${order.id}`;
+
+        return message;
+    };
+
+    // Checkout: Manipulador do formulário
+    const handleCheckout = (e) => {
+        e.preventDefault();
+
+        if (cart.length === 0) {
+            showNotification('Seu carrinho está vazio!', 'error');
+            return;
+        }
+
+        const formData = new FormData(checkoutForm);
+        const orderData = {
+            id: Date.now(),
+            date: new Date().toISOString(),
+            customer: {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
+            },
+            items: [...cart],
+            total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            status: 'pending'
+        };
+
+        // Salvar pedido
+        orders.push(orderData);
+        localStorage.setItem('orders', JSON.stringify(orders));
+
+        // Criar mensagem para WhatsApp
+        const whatsappMessage = createWhatsAppMessage(orderData);
+        const whatsappUrl = `https://wa.me/5511964338381?text=${encodeURIComponent(whatsappMessage)}`;
+
+        // Limpar carrinho
+        cart = [];
+        saveCart();
+        updateCartDisplay();
+
+        // Mostrar confirmação e redirecionar
+        showNotification('Pedido confirmado! Redirecionando para WhatsApp...', 'success');
+
+        setTimeout(() => {
+            window.open(whatsappUrl, '_blank');
+            showSection('products'); // Volta para a seção de produtos
+        }, 2000);
+    };
+
+    // Administração: Manipulador do formulário de produto
+    const handleProductSubmit = (e) => {
+        e.preventDefault();
+
+        const productId = document.getElementById('product-id').value;
+        const newProductData = {
+            id: productId ? parseInt(productId) : Date.now(),
+            name: document.getElementById('product-name').value,
+            description: document.getElementById('product-description').value,
+            price: parseFloat(document.getElementById('product-price').value),
+            image: document.getElementById('product-image').value,
+            category: document.getElementById('product-category').value
+        };
+
+        const existingIndex = products.findIndex(p => p.id === newProductData.id);
+        if (existingIndex >= 0) {
+            products[existingIndex] = newProductData;
+            showNotification('Produto atualizado com sucesso!', 'success');
+        } else {
+            products.push(newProductData);
+            showNotification('Produto adicionado com sucesso!', 'success');
+        }
+
+        saveProducts();
+        renderProducts();
+        renderAdminProducts();
+        updateCategoryFilter();
+        productForm.reset();
+        document.getElementById('product-id').value = '';
+    };
+
+    // Administração: Editar produto
+    window.editProduct = (productId) => {
+        const product = products.find(p => p.id === productId);
+        if (!product) return;
+
+        document.getElementById('product-id').value = product.id;
+        document.getElementById('product-name').value = product.name;
+        document.getElementById('product-description').value = product.description;
+        document.getElementById('product-price').value = product.price;
+        document.getElementById('product-image').value = product.image;
+        document.getElementById('product-category').value = product.category;
+    };
+
+    // Administração: Excluir produto
+    window.deleteProduct = (productId) => {
+        if (confirm('Tem certeza que deseja excluir este produto?')) {
+            products = products.filter(p => p.id !== productId);
+            saveProducts();
+            renderProducts();
+            renderAdminProducts();
+            updateCategoryFilter();
+            showNotification('Produto excluído com sucesso!', 'success');
+        }
+    };
+
+    // --- Configuração dos Event Listeners ---
+    const setupEventListeners = () => {
+        // Navegação
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = link.getAttribute('href').substring(1);
+                showSection(target);
+            });
+        });
+
+        // Botões de navegação
+        backToProductsButton.addEventListener('click', () => showSection('products'));
+
+        // Busca e filtros
+        searchInput.addEventListener('input', filterProducts);
+        categoryFilter.addEventListener('change', filterProducts);
+
+        // Carrinho
+        clearCartButton.addEventListener('click', () => {
+            if (confirm('Tem certeza que deseja limpar o carrinho?')) {
+                cart = [];
+                saveCart();
+                updateCartDisplay();
+                showNotification('Carrinho limpo', 'info');
+            }
+        });
+
+        checkoutButton.addEventListener('click', () => {
+            if (cart.length === 0) {
+                showNotification('Seu carrinho está vazio!', 'error');
+                return;
+            }
+            showSection('checkout');
+        });
+
+        // Checkout form
+        checkoutForm.addEventListener('submit', handleCheckout);
+
+        // Admin form
+        productForm.addEventListener('submit', handleProductSubmit);
+    };
+
+    // --- INICIALIZAÇÃO DA APLICAÇÃO ---
+    loadProducts(); // Carrega produtos do JSON primeiro, depois localStorage, ou fallback
+    updateCartDisplay(); // Atualiza o display do carrinho
+    setupEventListeners(); // Configura os event listeners
+
+    // Inicializar com seção de produtos ao carregar a página
+    showSection('products'); // Mostra a seção de produtos por padrão
+});
