@@ -557,3 +557,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showSection('products');
 });
 
+
+
+// Torna a função showSection acessível globalmente
+window.showSection = showSection;
