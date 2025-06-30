@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const cartSubtotalSpan = document.getElementById("cart-subtotal");
     const cartCountSpan = document.getElementById("cart-count");
     const checkoutButton = document.getElementById("checkout-button");
-    const checkoutSection = document.getElementById("checkout");
+    const checkoutSection = document.getElementById("checkout"); // Corrigido para getElementById
     const checkoutForm = document.getElementById("checkout-form");
     const pixAmountSpan = document.getElementById("pix-amount");
     const adminSection = document.getElementById("admin");
@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkoutItemsDiv = document.getElementById("checkout-items");
     const checkoutTotalSpan = document.getElementById("checkout-total");
     const clearCartButton = document.getElementById("clear-cart");
+    // Novo elemento para o botão de exportar
+    const exportProductsButton = document.getElementById('export-products-btn');
+
 
     // Variáveis globais
     let products = [];
@@ -36,6 +39,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const saveProducts = () => {
         localStorage.setItem('products', JSON.stringify(products));
+    };
+
+    // Nova função: Exportar produtos para JSON
+    const exportProductsToJson = () => {
+        const dataStr = JSON.stringify(products, null, 2); // Converte array 'products' para JSON formatado
+        const blob = new Blob([dataStr], { type: 'application/json' }); // Cria um Blob com o JSON
+        const url = URL.createObjectURL(blob); // Cria uma URL para o Blob
+
+        const a = document.createElement('a'); // Cria um elemento <a> temporário
+        a.href = url; // Define o link para a URL do Blob
+        a.download = 'products.json'; // Define o nome do arquivo a ser baixado
+        document.body.appendChild(a); // Adiciona o <a> ao corpo (necessário para o click programático em alguns navegadores)
+        a.click(); // Simula um clique para iniciar o download
+        document.body.removeChild(a); // Remove o <a>
+        URL.revokeObjectURL(url); // Libera a URL do objeto para liberar memória
+        showNotification('Produtos exportados para products.json!', 'success');
     };
 
     // Notificações
@@ -580,9 +599,23 @@ document.addEventListener("DOMContentLoaded", () => {
         // Navegação
         document.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', (e) => {
-                e.preventDefault();
                 const target = link.getAttribute('href').substring(1);
-                showSection(target);
+
+                if (target === 'admin') {
+                    e.preventDefault(); // Impede a navegação padrão para a área de admin
+                    const password = prompt('Por favor, insira a senha de administrador:');
+                    const correctPassword = 'Firefox@6636'; // A senha definida
+
+                    if (password === correctPassword) {
+                        showSection('admin');
+                        showNotification('Bem-vindo à área de administração!', 'success');
+                    } else {
+                        showNotification('Senha de adm incorreta. Acesso negado.', 'error');
+                    }
+                } else {
+                    e.preventDefault(); // Mantém a prevenção padrão para outros links
+                    showSection(target);
+                }
             });
         });
 
@@ -616,6 +649,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Admin form
         productForm.addEventListener('submit', handleProductSubmit);
+
+        // Adiciona listener para o novo botão de exportar
+        if (exportProductsButton) { // Garante que o botão existe no HTML
+            exportProductsButton.addEventListener('click', exportProductsToJson);
+        }
     };
 
     // --- INICIALIZAÇÃO DA APLICAÇÃO ---
