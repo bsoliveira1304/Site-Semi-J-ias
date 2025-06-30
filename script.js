@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Carregamento de produtos
     const loadProducts = async () => {
         try {
-            const response = await fetch('products.json');
+            const response = await fetch('./products.json');
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             products = await response.json();
         } catch (error) {
